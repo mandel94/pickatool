@@ -1,0 +1,22 @@
+[project]
+name = "pickatool"
+version = "0.0.1"
+description = "Pick a tool, you data alchemist!"
+dependencies = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "scipy",
+    "scikit-learn",
+    "statsmodels"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+
+
+

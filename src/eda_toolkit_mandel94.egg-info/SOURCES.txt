@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+src/eda_toolkit/__init__.py
+src/eda_toolkit/abstracts.py
+src/eda_toolkit/data_handler.py
+src/eda_toolkit/service.py
+src/eda_toolkit_mandel94.egg-info/PKG-INFO
+src/eda_toolkit_mandel94.egg-info/SOURCES.txt
+src/eda_toolkit_mandel94.egg-info/dependency_links.txt
+src/eda_toolkit_mandel94.egg-info/requires.txt
+src/eda_toolkit_mandel94.egg-info/top_level.txt
