@@ -6,8 +6,7 @@ from ..utils.types import DataFrame
 
 AvailableLoadFrameworks = Literal["pandas", "polar"]
 
-AvailableFileTypes = Literal["csv", "json", "xlsx", "parquet"] 
-
+AvailableFileTypes = Literal["csv", "json", "xlsx", "parquet"]
 
 
 class DataLoader(ABC):
@@ -17,7 +16,7 @@ class DataLoader(ABC):
             "csv": pd.read_csv,
             "json": pd.read_json,
             "parquet": pd.read_parquet,
-            "xlsx": pd.read_excel
+            "xlsx": pd.read_excel,
         }
     }
 
@@ -26,10 +25,12 @@ class DataLoader(ABC):
             self.path = path
             self.file_ext = self._get_extension(path)
         else:
-            raise ValueError(f"File type not supported:\
-                             {self._get_extension(path)}")
+            raise ValueError(
+                f"File type not supported:\
+                             {self._get_extension(path)}"
+            )
 
-    @abstractmethod    
+    @abstractmethod
     def load_data(self):
         pass
 
@@ -38,7 +39,7 @@ class DataLoader(ABC):
 
 
 class PandasDataLoader(DataLoader):
-    
+
     PANDAS_LOADER = DataLoader.LOADERS["pandas"]
 
     def __init__(self, path: str):
@@ -47,5 +48,3 @@ class PandasDataLoader(DataLoader):
     def load_data(self, **kwargs) -> DataFrame:
         loader_function = self.PANDAS_LOADER[self.file_ext]
         return loader_function(self.path, **kwargs)
-    
-

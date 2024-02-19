@@ -5,18 +5,23 @@ from .service import Task
 from ..utils.types import ParsingInfoByLanguage, AvailableLanguages
 from dateutil import parser
 from .data_loader import PandasDataLoader
-from pandas.api.types import is_numeric_dtype
-from sklearn.metrics import DistanceMetric
 from ..graph_toolkit.NetworkAnalysis import NetworkAnalysis
+import os
 
 from ..utils.types import DataFrame, SquareDataframe
 
 
 # DataHandler is the entry point for all data operations
 class DataHandler(ABC):
+
     def __init__(self, path):
+        if not self._path_exists(path):
+            raise FileNotFoundError(f"File not found: {path}")
         self.path = path
-        self.task = Task()
+
+    @staticmethod
+    def _path_exists(path: str) -> bool:
+        return os.path.exists(path)
 
     @abstractmethod
     def add_data(self, name: str, data: DataFrame):
@@ -65,11 +70,6 @@ class DataHandler(ABC):
     def parse_datetime(self, column: str, language: AvailableLanguages = "english"):
         pass
 
-    # @abstractmethod
-    # def get_outliers(self, column: Union[str, list(str)], method: Literal["z-score", "iqr"]):
-    #     '''Returns the index list of outliers in the given column(s) of the dataset.'''
-    #     pass
-
     @abstractmethod
     def _get_outliers_z_score(self, column: str):
         pass
@@ -82,8 +82,7 @@ class DataHandler(ABC):
 class PandasDataHandler(DataHandler):
 
     def __init__(self, path: str):
-        self.path = path
-        self.data = pd.DataFrame()
+        super().__init__(path)
 
     @staticmethod
     def compute_distances(
@@ -92,7 +91,6 @@ class PandasDataHandler(DataHandler):
         metric: str = "euclidean",
     ) -> DataFrame:
         return NetworkAnalysis.compute_distances(data, axis=axis, metric=metric)
-        
 
     def add_data(self, name: str, data: DataFrame):
         setattr(self, name, data)
@@ -150,12 +148,6 @@ class PandasDataHandler(DataHandler):
         data_loader = PandasDataLoader(self.path)
         self.data = data_loader.load_data(**kwargs)
         return self
-
-    # def get_outliers(self, column: Union[str, list(str)], method: Literal["z-score", "iqr"]):
-    #     # Validate self.data[column]. It must be numeric
-    #     # if not is_numeric_dtype(self.data[column]):
-    #     #     raise ValueError(f"Column '{column}' is not numeric")
-    #     pass
 
     def _get_outliers_z_score(self, column, threshold: float = 1.5):
         # TODO: Implement Z-Score method
