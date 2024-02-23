@@ -6,7 +6,6 @@ from typing import Literal
 from dataclasses import dataclass
 
 
-
 class ItalianParserInfo(parser.parserinfo):
     WEEKDAYS = [
         ("Lunedì", "Lun"),
@@ -32,5 +31,3 @@ class ItalianParserInfo(parser.parserinfo):
         ("Novembre", "Nov"),
         ("Dicembre", "Dic"),
     ]
-
-

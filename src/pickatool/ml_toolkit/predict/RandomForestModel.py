@@ -1,6 +1,5 @@
+from typing import Self, Optional
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from typing import Literal, Self, TypedDict, Optional, Union
-from enum import Enum
 from dataclasses import dataclass
 from sklearn.utils.validation import check_is_fitted
 from sklearn.metrics import classification_report
@@ -8,47 +7,27 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-RandomForestModelParams = TypedDict(
-    "RandomForestModelParams",
-    {
-        "n_estimators": int,
-        "criterion": Literal["gini", "entropy"],
-        "max_depth": Optional[int],
-        "min_samples_split": int,
-        "min_samples_leaf": int,
-        "max_features": Literal["sqrt", "log2", None],
-        "bootstrap": bool,
-        "oob_score": bool,
-        "n_jobs": Optional[int],
-        "random_state": Optional[int],
-        "verbose": int,
-        "warm_start": bool,
-        "class_weight": Optional[dict],
-        "ccp_alpha": float,
-        "max_samples": Optional[int],
-    },
-)
+from time import time
+from ..exceptions.custom_errors import PredictionsMissing, PredictionNotFound
+from ..types.types import RandomForestModelTypes, RandomForestModelParams
 
 
 @dataclass
 class Prediction:
-    X_pred: pd.DataFrame
-    y_pred: pd.Series
-    _y_true: Optional[pd.Series] = None
+    observed: pd.DataFrame
+    predicted: pd.Series
+    _truth: Optional[pd.Series] = None
 
     def __post_init__(self):
-        self.has_true = self._y_true
+        self.truth_known = self._truth
 
     @property
-    def y_true(self):
-        return self._y_true
+    def truth(self):
+        return self._truth
 
-    @y_true.setter
-    def y_true(self, value):
-        self._y_true = value
-
+    @truth.setter
+    def truth(self, value):
+        self._truth = value
 
 
 RandomForestModelDict = {
@@ -56,33 +35,13 @@ RandomForestModelDict = {
     "regressor": RandomForestRegressor,
 }
 
-RandomForestModel = Union[RandomForestClassifier, RandomForestRegressor]
-
-
-RandomForestModelTypes = Literal["classifier", "regressor"]
-
-
-class PredictionsMissing(Exception):
-    "Raise when prediction-based methods are called before making a prediction."
-
-    def __init__(
-        self,
-        model: RandomForestModel,
-        message: str = "No prediction has been made yet on this task. \
-                          Please make a prediction first.",
-    ) -> None:
-        self.model = model
-        self.message = message
-        super().__init__()
-
 
 class RandomForestModelTask:
-
 
     def __init__(self, model_type: RandomForestModelTypes = "classifier"):
         self.model_class = RandomForestModelDict[model_type]
         print(self.model_class)
-        self.predictions: dict[Optional[int], Prediction] = {}
+        self.predictions: dict[str, Prediction] = {}
 
     def _has_model(self):
         if hasattr(self, "model"):
@@ -98,12 +57,8 @@ class RandomForestModelTask:
     def _handle_missing_predictions(self):
         raise PredictionsMissing(self.model)
 
-    @property
-    def prediction_count(self):
-        return len(self.predictions.keys())
-
-    def get_prediction(self, prediction_id: int) -> Prediction:
-        return self.predictions[prediction_id]
+    def get_prediction(self, prediction_name: str) -> Prediction:
+        return self.predictions[prediction_name]
 
     @property
     def last_prediction(self):
@@ -111,18 +66,26 @@ class RandomForestModelTask:
             return list(self.predictions.values())[-1]
         self._handle_missing_predictions()
 
-    def feed_y_true(
-        self, y_true: pd.Series, prediction_id: Optional[int] = None
-    ) -> Prediction:
+    def feed_truth(self, prediction_name: str, truth: pd.Series) -> bool:
         if not self.predictions:
             self._handle_missing_predictions()
-        prediction = self.predictions[prediction_id]
-        if len(y_true) != len(prediction.y_pred):
-            raise ValueError("Length of y_true must be equal to the length of y_pred.")
-        prediction.y_true = y_true
-        return prediction
+        try:
+            prediction = self.predictions[prediction_name]
+        except KeyError:
+            PredictionNotFound(prediction_name)
+        if len(truth) != len(prediction.predicted):
+            raise ValueError(
+                "Length of truth must be equal to length of prediction.\
+                             All predictions must have a truth value to be valued against.\
+                             Please check your data."
+            )
+        prediction.truth = truth
+        self.predictions.update({prediction_name: prediction})
+        return True
 
-    def create_model(self, model_params: Optional[RandomForestModelParams] = None) -> Self:
+    def create_model(
+        self, model_params: Optional[RandomForestModelParams] = None
+    ) -> Self:
         if model_params is None:
             # Default parameters
             model_params = {
@@ -167,33 +130,48 @@ class RandomForestModelTask:
         print("Model has been fitted successfully.")
         return self
 
-    def predict(
-        self, X: Optional[pd.DataFrame] = None, y_true: Optional[pd.Series] = None
-    ) -> Prediction:
+    def predict(self, prediction_name: Optional[str] = None) -> Prediction:
+        """Predict on the test set split-out when fitting the model"""
         if not self._has_model():
             self._handle_has_not_model()
         check_is_fitted(self.model)
-        if y_true is not None and X is not None:
-            if y_true.size != X.shape[0]:
-                raise ValueError("Length of y_true must be equal to the length of X.")
-        X_pred = self.X_test if X is None else X
+        X_observed = self.X_test
         prediction = Prediction(
-            X_pred=X_pred, y_pred=self.model.predict(X_pred), _y_true=y_true
+            observed=X_observed, predicted=self.model.predict(X_observed)
         )
-        self.predictions[self.prediction_count] = prediction
+        prediction_name = prediction_name or str(int(time() * 1000))
+        self.predictions[prediction_name] = Prediction(
+            observed=X_observed, predicted=self.model.predict(X_observed)
+        )
         return prediction
 
-    def get_classification_report(self, prediction_id: Optional[int] = None) -> None:
+    def predict_on_new_observation(
+        self, X_observed: pd.DataFrame, prediction_name: Optional[str]
+    ) -> Prediction:
+        if X_observed is None:
+            raise ValueError("Provide observations you want to predict on.")
+        if not self._has_model():
+            self._handle_has_not_model()
+        check_is_fitted(self.model)
+        # Default name is current timestamp (int to remove milliseconds)
+        prediction_name = prediction_name or str(int(time() * 1000))
+        prediction = Prediction(
+            observed=X_observed, predicted=self.model.predict(X_observed)
+        )
+        self.predictions.update({prediction_name: prediction})
+        return prediction
+
+    def get_classification_report(self, prediction_name: str) -> None:
         if not self.predictions:
             self._handle_missing_predictions()
-        if prediction_id is None:
+        if prediction_name is None:
             candidate_pred = self.last_prediction
         else:
-            candidate_pred = self.get_prediction(prediction_id)
-        if not candidate_pred.has_true:
+            candidate_pred = self.get_prediction(prediction_name)
+        if not candidate_pred.truth_known:
             raise ValueError("No true values have been fed to this prediction.")
         return classification_report(
-            candidate_pred.y_true, candidate_pred.y_pred, output_dict=True
+            candidate_pred.truth, candidate_pred.predicted, output_dict=True
         )
 
     def get_feature_importances(self, sorted: bool = True) -> pd.DataFrame:

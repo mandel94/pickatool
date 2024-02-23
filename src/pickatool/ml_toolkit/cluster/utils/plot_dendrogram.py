@@ -29,24 +29,22 @@ def _plot_dendrogram(
     ).astype(float)
 
     fig, ax = plt.subplots(**figure_parameters)
-    
+
     xlabel_params = {
-        key: re.search(r'(^xlabel_)(.*)', key)[1] for key in axes_parameters.keys()
+        key: re.search(r"(^xlabel_)(.*)", key)[1] for key in axes_parameters.keys()
     }
     ylabel_params = {
-        key: re.search(r'(^ylabel_)(.*)', key)[1] for key in axes_parameters.keys()
+        key: re.search(r"(^ylabel_)(.*)", key)[1] for key in axes_parameters.keys()
     }
     ax.set_xlabel(**xlabel_params)
     ax.set_ylabel(**ylabel_params)
     # Remove parameters from the axes_parameters dict
     [axes_parameters.pop(key) for key in xlabel_params]
     [axes_parameters.pop(key) for key in ylabel_params]
-    ax.set(**axes_parameters) # Remaining params
+    ax.set(**axes_parameters)  # Remaining params
     if truncating_line:
         ax.axhline(y=truncating_line, c="r", linestyle="--")
     # Plot the corresponding dendrogram
-    dendrogram(linkage_matrix, 
-               ax=ax, 
-               labels=entities, 
-               distance_sort="descending", 
-               **kwargs)
+    dendrogram(
+        linkage_matrix, ax=ax, labels=entities, distance_sort="descending", **kwargs
+    )

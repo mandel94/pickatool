@@ -1,0 +1,3 @@
+[submodule "src/pickatool/eda_toolkit/cloned_repos/word_cloud"]
+	path = src/pickatool/eda_toolkit/cloned_repos/word_cloud
+	url = https://github.com/amueller/word_cloud.git

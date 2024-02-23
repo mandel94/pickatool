@@ -1,33 +1,41 @@
-from typing import Literal
+from typing import Literal, Union, Any, Callable, Optional, TypeAlias, Iterable
 from dateutil import parser
 from enum import Enum
 import pandas as pd
+import numpy as np
 from .datetime_parser import ItalianParserInfo
 
 
-AvailableLanguages = Literal["italian"]
+# NETWORK ANALYSIS ----------------------------------------------------------
 
-AvailableEngines = Literal["pandas"]
+Node: TypeAlias = tuple[int, str]
 
-# ---------------------------------------------------------------------------
-# Network Analysis
+Edge: TypeAlias = tuple[int, int, str, float]
 
-Node = tuple[int, str]
 
-Edge = tuple[int, int, str, float]
+# STRIGN HANDLING -----------------------------------------------------------
 
-# ---------------------------------------------------------------------------
+
+# PARSING -------------------------------------------------------------------
+
+AvailableLanguages: TypeAlias = Literal["italian"]
 
 
 class ParsingInfoByLanguage(Enum):
     ITALIAN: parser.parserinfo = ItalianParserInfo
 
 
-# ---------------------------------------------------------------------------
+# DATA HANDLING -------------------------------------------------------------
+
+AvailableEngines: TypeAlias = Literal["pandas"]
+
+
+DataType: TypeAlias = Union[np.ndarray, Iterable, dict, pd.DataFrame]
 
 
 class DataFrame(Enum):
     PANDAS = pd.DataFrame
+
 
 class SquareDataframe(pd.DataFrame):
     # Validate if the dataframe is square
@@ -39,4 +47,3 @@ class SquareDataframe(pd.DataFrame):
         if self.shape[0] != self.shape[1]:
             raise ValueError("Dataframe is not square")
         return self
-    

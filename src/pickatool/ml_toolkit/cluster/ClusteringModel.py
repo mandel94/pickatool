@@ -72,6 +72,10 @@ class ClusteringModelTask:
         else:
             entities = None
         _plot_dendrogram(
-            self.model, entities, figure_parameters, axes_parameters, 
-            truncating_line, **kwargs
+            self.model,
+            entities,
+            figure_parameters,
+            axes_parameters,
+            truncating_line,
+            **kwargs
         )

@@ -2,7 +2,6 @@ import numpy as np
 from scipy.cluster.hierarchy import dendrogram
 
 
-
 def plot_dendrogram(model, **kwargs):
     # Create linkage matrix and then plot the dendrogram
 
