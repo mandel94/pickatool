@@ -60,8 +60,8 @@ class DataLoader(ABC):
                     if avg_how_how_many_seps_each_line == how_many_seps_in_first_line:
                         return separator
         raise ValueError(
-            "No separator found in provided file. The following\
-                         separators were tested: f{candidate_separators}"
+            f"No separator found in provided file. The following separators "
+             "were tested: {candidate_separators}"
         )
 
     def __init__(self, path: str, encoding: Optional[str] = "utf-8"):
