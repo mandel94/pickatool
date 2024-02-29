@@ -53,16 +53,15 @@ class DataHandler:
         return NetworkAnalysis.compute_distances(data, axis=axis, metric=metric)
 
 
-class PandasDataHandler(DataHandler, pd.DataFrame):
+class PandasDataHandler(DataHandler):
 
     def __init__(
         self,
         /,
         path: Optional[str] = None,
         data: Optional[pd.DataFrame] = None,
-        **pandasKwargs,
     ):
-        super().__init__(path=path, data=data, **pandasKwargs)
+        super().__init__(path=path, data=data)
 
     def __getitem__(self, key: str) -> Any:
         return self.data[key]

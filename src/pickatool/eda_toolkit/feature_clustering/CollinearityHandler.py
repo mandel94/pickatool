@@ -2,6 +2,8 @@ import pandas as pd
 from typing import Any, Optional, Literal, Union, Callable, TypeAlias, NamedTuple
 from .feature_clustering_implementations import FeatClustImplementations
 from pickatool.stats_toolkit.compute_correlation import get_correlation_matrix_function
+from .types import FCluster as Cluster
+
 
 Array = Any
 
@@ -22,7 +24,6 @@ GetClusterMethods = {
     "V0": FeatClustImplementations["V0"],
 }
 
-Cluster = NamedTuple("Cluster", [("name", str), ("nodes", set), ("pairs", list)])
 
 
 class CollinearityHandler:

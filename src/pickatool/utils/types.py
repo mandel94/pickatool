@@ -1,9 +1,10 @@
-from typing import Literal, Union, Any, Callable, Optional, TypeAlias, Iterable
+from typing import Literal, Union, Any, Callable, Optional, TypeAlias, Iterable, NamedTuple
 from dateutil import parser
 from enum import Enum
 import pandas as pd
 import numpy as np
 from .datetime_parser import ItalianParserInfo
+from dataclasses import dataclass, Field
 
 
 # NETWORK ANALYSIS ----------------------------------------------------------
@@ -47,3 +48,11 @@ class SquareDataframe(pd.DataFrame):
         if self.shape[0] != self.shape[1]:
             raise ValueError("Dataframe is not square")
         return self
+
+# FEATURE CLUSTERING ----------------------------------------------------------------
+    
+class FCluster(NamedTuple):
+    """Feature cluster class."""
+    name: str
+    nodes: set = {}
+    pairs: Optional[list] = []
