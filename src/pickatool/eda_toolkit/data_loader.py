@@ -61,7 +61,7 @@ class DataLoader(ABC):
                         return separator
         raise ValueError(
             f"No separator found in provided file. The following separators "
-             "were tested: {candidate_separators}"
+            "were tested: {candidate_separators}"
         )
 
     def __init__(self, path: str, encoding: Optional[str] = "utf-8"):

@@ -1,4 +1,5 @@
 from typing import Literal, Union, Any, Callable, Optional, Self
+from pandas._typing import IndexLabel
 import pandas as pd
 import numpy as np
 from ..utils.types import ParsingInfoByLanguage, AvailableLanguages
@@ -7,8 +8,9 @@ from .data_loader import PandasDataLoader, AvailableFileTypes
 from ..graph_toolkit.NetworkAnalysis import NetworkAnalysis
 import os
 from matplotlib import pyplot as plt
+import html
+from pandas import DataFrame
 
-from ..utils.types import DataFrame, SquareDataframe
 
 
 # DataHandler is the entry point for all data operations
@@ -18,7 +20,7 @@ class DataHandler:
         self,
         /,
         path: Optional[str] = None,
-        data: Optional[DataFrame] = None,
+        data: Optional[pd.DataFrame] = None,
         **pandasKwargs,
     ):
         """Initialize the DataHandler class."""
@@ -26,9 +28,9 @@ class DataHandler:
             if not self._path_exists(path):
                 raise FileNotFoundError(f"File not found: {path}")
         elif data is not None:
-            self.data = pd.DataFrame(data, **pandasKwargs)
+            self.data = pd.pd.DataFrame(data, **pandasKwargs)
         else:
-            raise ValueError("No data provided. Please provide a path or a dataframe.")
+            raise ValueError("No data provided. Please provide a path or a pd.DataFrame.")
         # Path or data should not be provided at the same time
         if path and data:
             raise ValueError("Both path and data cannot be provided at the same time.")
@@ -44,20 +46,20 @@ class DataHandler:
 
     @staticmethod
     def compute_distances(
-        data: DataFrame,
+        data: pd.DataFrame,
         axis: Literal["columns", "rows"] = "columns",
         metric: str = "euclidean",
-    ) -> DataFrame:
+    ) -> pd.DataFrame:
         return NetworkAnalysis.compute_distances(data, axis=axis, metric=metric)
 
 
-class PandasDataHandler(DataHandler):
+class PandasDataHandler(DataHandler, pd.DataFrame):
 
     def __init__(
         self,
         /,
         path: Optional[str] = None,
-        data: Optional[DataFrame] = None,
+        data: Optional[pd.DataFrame] = None,
         **pandasKwargs,
     ):
         super().__init__(path=path, data=data, **pandasKwargs)
@@ -68,14 +70,12 @@ class PandasDataHandler(DataHandler):
     def __setitem__(self, key: str, value: Any) -> None:
         self.data[key] = value
 
-    def __repr__(self) -> str:
-        return self.data.__repr__()
 
-    def add_data(self, name: str, data: DataFrame):
+    def add_data(self, name: str, data: pd.DataFrame):
         setattr(self, name, data)
         return self
 
-    def update_data(self, data: DataFrame) -> Self:
+    def update_data(self, data: pd.DataFrame) -> Self:
         self.data = data
         print("Data updated successfully")
 
@@ -245,10 +245,22 @@ class PandasDataHandler(DataHandler):
         if inplace:
             self.data = filtered_data
         return Self
-    
-    def remove_where_index_equal(self, value: Union[int, float, str], inplace: bool = True) -> pd.DataFrame:
+
+    def remove_where_index_equal(
+        self, value: Union[int, float, str], inplace: bool = True
+    ) -> pd.DataFrame:
         """Remove rows based on the index value."""
         filtered_data = self.data.drop(index=value, inplace=inplace)
+        return filtered_data
+
+    def remove_columns(self, columns: IndexLabel, inplace: bool = True) -> pd.DataFrame:
+        """Remove columns from the dataframe.
+
+        Args:
+            columns (Union[list[str] | str]): The columns to remove.
+            inplace (bool, optional): Whether to update the dataframe inplace. Defaults to True.
+        """
+        filtered_data = self.data.drop(columns=columns, inplace=inplace)
         return filtered_data
 
     def one_hot_encode(self, column: str, inplace: bool = True) -> pd.DataFrame:
@@ -257,8 +269,13 @@ class PandasDataHandler(DataHandler):
             self.data = pd.concat([self.data, df_with_dummies], axis=1)
         return df_with_dummies
 
-    def pivot_grouped_categories_count(self, column: str, key: Union[str, list[str]], 
-                                       suffix: Optional[str] = "_count", **kwargs) -> pd.Series:
+    def pivot_grouped_categories_count(
+        self,
+        column: str,
+        key: Union[str, list[str]],
+        suffix: Optional[str] = "_count",
+        **kwargs,
+    ) -> pd.Series:
         """Group by the provided key, and count the occurrences of each category in the provided column for each group.
 
         This command is useful when you want to count the occurrences of each category in a column, grouped by another column.
@@ -279,7 +296,7 @@ class PandasDataHandler(DataHandler):
 
         Example:
             You have 5 users, each with a number of purchases:
-            user_id | purchase_time 
+            user_id | purchase_time
             1       | morning
             1       | morning
             1       | afternoon
@@ -298,14 +315,10 @@ class PandasDataHandler(DataHandler):
         categories = self.data[column].value_counts().index
         one_hot_encoded_df = self.one_hot_encode(column, inplace=False)
         # concat with key column
-        one_hot_encoded_df = pd.concat([self.data[key], one_hot_encoded_df], axis=1)    
-        args = {
-            f"{cat}{suffix}": (cat, "sum") for cat in categories
-        }
+        one_hot_encoded_df = pd.concat([self.data[key], one_hot_encoded_df], axis=1)
+        args = {f"{cat}{suffix}": (cat, "sum") for cat in categories}
         categories_count_per_group = one_hot_encoded_df.groupby(key).agg(**args)
         return categories_count_per_group
-
-
 
     def parse_datetime(self, column: str, language: AvailableLanguages = "english"):
         parser_info = self._get_locale_parser_info(language)
@@ -337,7 +350,7 @@ class PandasDataHandler(DataHandler):
             self.data = new_data
         return self.data
 
-    def load(self, **kwargs) -> DataFrame:
+    def load(self, **kwargs) -> pd.DataFrame:
         if not self.path:
             raise ValueError(
                 "No path provided. You should provide a path before loading data."
