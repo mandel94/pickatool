@@ -79,4 +79,3 @@ class ClusteringModelTask:
             truncating_line,
             **kwargs
         )
-

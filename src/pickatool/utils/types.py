@@ -1,4 +1,13 @@
-from typing import Literal, Union, Any, Callable, Optional, TypeAlias, Iterable, NamedTuple
+from typing import (
+    Literal,
+    Union,
+    Any,
+    Callable,
+    Optional,
+    TypeAlias,
+    Iterable,
+    NamedTuple,
+)
 from dateutil import parser
 from enum import Enum
 import pandas as pd
@@ -49,10 +58,13 @@ class SquareDataframe(pd.DataFrame):
             raise ValueError("Dataframe is not square")
         return self
 
+
 # FEATURE CLUSTERING ----------------------------------------------------------------
-    
+
+
 class FCluster(NamedTuple):
     """Feature cluster class."""
+
     name: str
     nodes: set = {}
     pairs: Optional[list] = []

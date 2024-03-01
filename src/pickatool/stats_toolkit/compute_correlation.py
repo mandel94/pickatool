@@ -54,10 +54,12 @@ def get_similarity_function(distance) -> Callable:
         Callable: The similarity function.
     """
     dist = DistanceMetric.get_metric(distance)
+
     def compute_similarity(array1, array2):
         array1 = pd.DataFrame(array1)
         array2 = pd.DataFrame(array2)
         return 1 - dist.pairwise(array1.T, array2.T)[0][0]
+
     return compute_similarity
 
 
@@ -100,8 +102,11 @@ def compute_correlation_matrix(data: pd.DataFrame, method="pearson") -> pd.DataF
             distance_matrix[i, j] = compute_correlation(
                 data[col1], data[col2], method=method
             )
-    distance_matrix = pd.DataFrame(distance_matrix, index=data.columns, columns=data.columns)
+    distance_matrix = pd.DataFrame(
+        distance_matrix, index=data.columns, columns=data.columns
+    )
     return distance_matrix
+
 
 def get_correlation_matrix_function(method="pearson") -> Callable:
     """
@@ -112,8 +117,9 @@ def get_correlation_matrix_function(method="pearson") -> Callable:
 
     Returns:
         Callable: The correlation matrix function.
-    """ 
+    """
     return lambda data: compute_correlation_matrix(data, method=method)
+
 
 GetCorrelation = {
     "pearson": lambda array1, array2: stats.pearsonr(array1, array2)[0],
@@ -132,6 +138,3 @@ GetCorrelation = {
         ]
     },
 }
-
-
-        

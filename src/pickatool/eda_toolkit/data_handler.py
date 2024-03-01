@@ -12,7 +12,6 @@ import html
 from pandas import DataFrame
 
 
-
 # DataHandler is the entry point for all data operations
 class DataHandler:
 
@@ -30,7 +29,9 @@ class DataHandler:
         elif data is not None:
             self.data = pd.pd.DataFrame(data, **pandasKwargs)
         else:
-            raise ValueError("No data provided. Please provide a path or a pd.DataFrame.")
+            raise ValueError(
+                "No data provided. Please provide a path or a pd.DataFrame."
+            )
         # Path or data should not be provided at the same time
         if path and data:
             raise ValueError("Both path and data cannot be provided at the same time.")
@@ -68,7 +69,6 @@ class PandasDataHandler(DataHandler):
 
     def __setitem__(self, key: str, value: Any) -> None:
         self.data[key] = value
-
 
     def add_data(self, name: str, data: pd.DataFrame):
         setattr(self, name, data)

@@ -2,7 +2,7 @@ import pandas as pd
 from typing import Any, Optional, Literal, Union, Callable, TypeAlias, NamedTuple
 from .feature_clustering_implementations import FeatClustImplementations
 from pickatool.stats_toolkit.compute_correlation import get_correlation_matrix_function
-from .types import FCluster as Cluster
+from ._types import FCluster as Cluster
 
 
 Array = Any
@@ -23,7 +23,6 @@ CorrelationMethod: TypeAlias = Union[
 GetClusterMethods = {
     "V0": FeatClustImplementations["V0"],
 }
-
 
 
 class CollinearityHandler:
@@ -86,9 +85,7 @@ class CollinearityHandler:
         computed_clusters = self._compute_clusters(threshold)
         for cluster in computed_clusters:
             self.clusters.append(
-                Cluster(
-                    name=cluster.name, nodes=cluster.nodes, pairs=cluster.pairs
-                )
+                Cluster(name=cluster.name, nodes=cluster.nodes, pairs=cluster.pairs)
             )
 
         return self.clusters
@@ -98,11 +95,14 @@ class CollinearityHandler:
         Print the clusters of features.
         """
         if not hasattr(self, "clusters"):
-            raise ValueError("No clusters have been computed. Call `cluster_features` first to compute clusters on features.")
-        
+            raise ValueError(
+                "No clusters have been computed. Call `cluster_features` first to compute clusters on features."
+            )
+
         for cluster in self.clusters:
-            print(f''' 
+            print(
+                f""" 
             Cluster: {cluster.name} 
             ---- Nodes: {cluster.nodes}
-            ---- Pairs: {cluster.pairs}''')
-        
+            ---- Pairs: {cluster.pairs}"""
+            )
