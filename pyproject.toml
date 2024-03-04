@@ -1,5 +1,5 @@
 [project]
-name = "pickatool"
+name = "pikatool"
 version = "0.0.1"
 description = "Pick a tool, you data alchemist!"
 dependencies = [
