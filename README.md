@@ -1,1 +1,1 @@
-![pikatool logo](public\images\logo_pikatool.png)
+![pikatool logo](public/images/logo_pikatool.png)
