@@ -1,4 +1,4 @@
-from typing import Literal, Union, Any, Callable, Optional, Self
+from typing import Literal, Union, Any, Callable, Optional, Self, TypeVar
 from pandas._typing import IndexLabel
 import pandas as pd
 import numpy as np
@@ -8,12 +8,23 @@ from .data_loader import PandasDataLoader, AvailableFileTypes
 from ..graph_toolkit.NetworkAnalysis import NetworkAnalysis
 import os
 from matplotlib import pyplot as plt
-import html
-from pandas import DataFrame
 
 
-# DataHandler is the entry point for all data operations
-class DataHandler:
+def _path_exists(path: str) -> bool:
+    return os.path.exists(path)
+
+def _get_locale_parser_info(language: AvailableLanguages) -> parser.parserinfo:
+    return ParsingInfoByLanguage[language.upper()].value
+
+def compute_distances(
+    data: pd.DataFrame,
+    axis: Literal["columns", "rows"] = "columns",
+    metric: str = "euclidean",
+) -> pd.DataFrame:
+    return NetworkAnalysis.compute_distances(data, axis=axis, metric=metric)
+
+
+class DataHandler():
 
     def __init__(
         self,
@@ -24,7 +35,7 @@ class DataHandler:
     ):
         """Initialize the DataHandler class."""
         if path:
-            if not self._path_exists(path):
+            if not _path_exists(path):
                 raise FileNotFoundError(f"File not found: {path}")
         elif data is not None:
             self.data = pd.pd.DataFrame(data, **pandasKwargs)
@@ -36,33 +47,6 @@ class DataHandler:
         if path and data:
             raise ValueError("Both path and data cannot be provided at the same time.")
         self.path = path
-
-    @staticmethod
-    def _path_exists(path: str) -> bool:
-        return os.path.exists(path)
-
-    @staticmethod
-    def _get_locale_parser_info(language: AvailableLanguages) -> parser.parserinfo:
-        return ParsingInfoByLanguage[language.upper()].value
-
-    @staticmethod
-    def compute_distances(
-        data: pd.DataFrame,
-        axis: Literal["columns", "rows"] = "columns",
-        metric: str = "euclidean",
-    ) -> pd.DataFrame:
-        return NetworkAnalysis.compute_distances(data, axis=axis, metric=metric)
-
-
-class PandasDataHandler(DataHandler):
-
-    def __init__(
-        self,
-        /,
-        path: Optional[str] = None,
-        data: Optional[pd.DataFrame] = None,
-    ):
-        super().__init__(path=path, data=data)
 
     def __getitem__(self, key: str) -> Any:
         return self.data[key]
@@ -320,20 +304,20 @@ class PandasDataHandler(DataHandler):
         return categories_count_per_group
 
     def parse_datetime(self, column: str, language: AvailableLanguages = "english"):
-        parser_info = self._get_locale_parser_info(language)
+        parser_info = _get_locale_parser_info(language)
         return self.data[column].apply(
             lambda x: parser.parse(x, parserinfo=parser_info)
         )
 
     def merge(
         self,
-        to_merge: Union[DataHandler, pd.DataFrame],
+        to_merge: Union['DataHandler', pd.DataFrame],
         print_before_after: bool = False,
         inplace: bool = True,
         **kwargs,
     ) -> pd.DataFrame:
         """Take the data attribute and merge it with another dataframe"""
-        if to_merge.__class__.__name__ == "PandasDataHandler":
+        if to_merge.__class__.__name__ == "DataHandler":
             to_merge = to_merge.data
         new_data = pd.merge(self.data, to_merge, **kwargs)
         if print_before_after:

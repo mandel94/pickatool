@@ -1,19 +1,16 @@
 from pickatool.stats_toolkit import MCA_v2 as MCA
-from pickatool.eda_toolkit import PandasDataHandler
+from pickatool.eda_toolkit import DataHandler
 from typing import Union, TypeAlias, Any, Literal, NamedTuple, Optional, Iterable, Self
 import pandas as pd
 from dataclasses import dataclass
 from ._types import FCluster as Cluster
-from functools import lru_cache, singledispatch
 
-Data = Union[PandasDataHandler, pd.DataFrame]
+Data = Union[DataHandler, pd.DataFrame]
 
 
 @dataclass
 class MCA_Result:
-    """The result of an MCA analysis.
-    """
-
+    """The result of an MCA analysis."""
     eigenvalues: Any
     factored_individuals: Any
     factored_features: Any
@@ -36,7 +33,7 @@ class mcaFC:
     def __init__(
         self, data: Data, clusters: Optional[OneOrMoreClusters] = None
     ) -> None:
-        if isinstance(data, PandasDataHandler):
+        if isinstance(data, DataHandler):
             tmp_df = data.data  # Need `tmp_df` to avoid mypy static analysis error
         tmp_df = data
         self.data = tmp_df
