@@ -21,7 +21,7 @@ class ClusteringModelParams:
     metric: str = "euclidean"
 
 
-class ClusteringModelTask:
+class ClusteringTask:
 
     def __init__(self, model_type="agglomerative"):
         self.model_class = ClusteringModelImpl.get(model_type)
