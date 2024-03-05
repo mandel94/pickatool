@@ -25,7 +25,7 @@ GetClusterMethods = {
 }
 
 
-class CollinearityHandler:
+class FeatureClusterer():
     """"""
 
     def __init__(self, data: pd.DataFrame) -> None:
@@ -89,6 +89,7 @@ class CollinearityHandler:
             )
 
         return self.clusters
+    
 
     def print_clusters(self):
         """

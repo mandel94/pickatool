@@ -19,7 +19,6 @@ class MCA_Result:
     individuals_cosine_similarities: Any
     features_cosine_similarities: Any
     scree_plot: callable
-        
 
 
 ClusterName: TypeAlias = str
@@ -38,19 +37,25 @@ class mcaFC:
         tmp_df = data
         self.data = tmp_df
         del tmp_df
-        self.clusters: dict[ClusterName, Cluster] = (
-            self._validate_clusters(clusters) if clusters else {}  # type: ignore
-        )
+        self.clusters: dict[ClusterName, Cluster] = {}
+        if clusters:
+            for cluster in clusters:
+                self.clusters[cluster.name] = self._validate_clusters(cluster)
         self.mca_results: dict[ClusterName, MCA_Result] = {}
 
     def _validate_clusters(
-        self, clusters: OneOrMoreClusters
-    ) -> dict[ClusterName, Cluster]:
-        for cluster in clusters:
-            for feature in cluster.nodes:
-                if feature not in self.data.columns:
-                    raise ValueError(f"Feature `{feature}` is not present in the data.")
-        return {cluster.name: cluster for cluster in clusters}
+        self, cluster: Cluster
+    ) -> Cluster:
+        # Which clusters have already been included in the MCA object?
+        clustered_features = [feature for cluster in self.clusters.values() for feature in cluster.nodes]
+        for feature in cluster.nodes:
+            # VALIDATION 1
+            if feature in clustered_features:
+                raise ValueError(f"Feature `{feature}` is already present in some other cluster. Clusters shall not be overlapping")
+            # VALIDATION 2
+            if feature not in self.data.columns:
+                raise ValueError(f"Feature `{feature}` is not present in the data.")
+        return cluster
 
     def feed_cluster(self, cluster: OneOrMoreClusters) -> Any:
         """Add clusters to the MCA object.
@@ -97,3 +102,29 @@ class mcaFC:
             )
         return self
 
+    def plug_components(
+        self, n_components: int = 1, inplace: bool = False
+    ) -> pd.DataFrame:
+        """Plug the MCA components into the current state of data.
+
+        For each clusters that has been run, it substitutes the original features
+        with the factored features.
+
+        Args:
+        inplace (bool, optional): If True, the original data will be modified.
+            Defaults to False.
+
+        Returns:
+        pd.DataFrame: The modified data-state.
+        """
+        df_with_factors = self.data.copy(deep=True)
+        for name, mca_res in self.mca_results.items():
+            cluster = self.clusters[name]
+            # Drop the original features
+            df_with_factors.drop(columns=cluster.nodes, axis=1, inplace=True)
+            for i in range(n_components):
+                factored_individuals = mca_res.factored_individuals.iloc[:, i]
+                df_with_factors[f"{name}_component_{i}"] = factored_individuals
+        if inplace:
+            self.data = df_with_factors
+        return df_with_factors

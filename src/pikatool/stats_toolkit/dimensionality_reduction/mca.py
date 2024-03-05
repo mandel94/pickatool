@@ -15,7 +15,7 @@ class MCA(ABC):
     @abstractmethod
     def _run_mca(self, **kwargs) -> Any:
         pass
-    
+
     @property
     @abstractmethod
     def eigenvalues(self) -> Any:
@@ -60,7 +60,6 @@ class MCA(ABC):
         pass
 
 
-
 class MCA_v0(MCA):
     """Run MCA analysis, based on the `mca` package.
 
@@ -84,15 +83,15 @@ class MCA_v0(MCA):
     @property
     def column_coordinates(self) -> Any:
         return self.obj.fs_c
-    
+
     @property
     def row_cosine_similarities(self) -> Any:
         return self.obj.cos_r
-    
+
     @property
     def column_cosine_similarities(self) -> Any:
         return self.obj.cos_c
-    
+
     @property
     def row_contributions(self) -> Any:
         pass
@@ -100,7 +99,7 @@ class MCA_v0(MCA):
     @property
     def column_contributions(self) -> Any:
         pass
-    
+
     def plot_coordinates(self) -> Any:
         pass
 
@@ -181,19 +180,19 @@ class MCA_v2(MCA):
     @property
     def column_coordinates(self) -> Any:
         return self.obj.column_coordinates(self.data)
-    
+
     @property
     def row_contributions(self) -> Any:
-        return self.obj.row_contributions_.style.format('{:.0%}')
-    
+        return self.obj.row_contributions_.style.format("{:.0%}")
+
     @property
     def column_contributions(self) -> Any:
-        return self.obj.column_contributions_.style.format('{:.0%}')
-    
+        return self.obj.column_contributions_.style.format("{:.0%}")
+
     @property
     def row_cosine_similarities(self) -> Any:
         return self.obj.row_cosine_similarities(self.data)
-    
+
     @property
     def column_cosine_similarities(self) -> Any:
         return self.obj.column_cosine_similarities(self.data)
@@ -208,13 +207,19 @@ class MCA_v2(MCA):
             show_column_labels=False,
             show_row_labels=False,
         )
-    
+
     def scree_plot(self, title: Optional[str] = "") -> Any:
         fig, ax = plt.subplots(figsize=(5, 4))
         # Set ticks to 0,1,..., until length of eigenvalues
-        ax.bar(np.arange(1, len(self.eigenvalues)+1), self.eigenvalues, width=1, edgecolor="white", linewidth=0.7)
+        ax.bar(
+            np.arange(1, len(self.eigenvalues) + 1),
+            self.eigenvalues,
+            width=1,
+            edgecolor="white",
+            linewidth=0.7,
+        )
         ax.set_xlabel("Factor")
-        ax.set_xticks(np.arange(1, len(self.eigenvalues)+1))
+        ax.set_xticks(np.arange(1, len(self.eigenvalues) + 1))
         ax.set_ylabel("Eigenvalue")
         title = f" of {title}" if title else ""
         ax.set_title(f"Scree plot {title}")
@@ -222,6 +227,8 @@ class MCA_v2(MCA):
 
     def scree_plot_fun(self, title: Optional[str] = "") -> Any:
         _title = f" of {title}" if title else ""
+
         def _scree_plot_fun():
             return self.scree_plot(title=_title)
+
         return _scree_plot_fun

@@ -13,8 +13,10 @@ from matplotlib import pyplot as plt
 def _path_exists(path: str) -> bool:
     return os.path.exists(path)
 
+
 def _get_locale_parser_info(language: AvailableLanguages) -> parser.parserinfo:
     return ParsingInfoByLanguage[language.upper()].value
+
 
 def compute_distances(
     data: pd.DataFrame,
@@ -24,7 +26,7 @@ def compute_distances(
     return NetworkAnalysis.compute_distances(data, axis=axis, metric=metric)
 
 
-class DataHandler():
+class DataHandler:
 
     def __init__(
         self,
@@ -311,7 +313,7 @@ class DataHandler():
 
     def merge(
         self,
-        to_merge: Union['DataHandler', pd.DataFrame],
+        to_merge: Union["DataHandler", pd.DataFrame],
         print_before_after: bool = False,
         inplace: bool = True,
         **kwargs,
