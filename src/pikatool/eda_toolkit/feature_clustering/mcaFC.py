@@ -11,6 +11,7 @@ Data = Union[DataHandler, pd.DataFrame]
 @dataclass
 class MCA_Result:
     """The result of an MCA analysis."""
+
     eigenvalues: Any
     factored_individuals: Any
     factored_features: Any
@@ -43,15 +44,17 @@ class mcaFC:
                 self.clusters[cluster.name] = self._validate_clusters(cluster)
         self.mca_results: dict[ClusterName, MCA_Result] = {}
 
-    def _validate_clusters(
-        self, cluster: Cluster
-    ) -> Cluster:
+    def _validate_clusters(self, cluster: Cluster) -> Cluster:
         # Which clusters have already been included in the MCA object?
-        clustered_features = [feature for cluster in self.clusters.values() for feature in cluster.nodes]
+        clustered_features = [
+            feature for cluster in self.clusters.values() for feature in cluster.nodes
+        ]
         for feature in cluster.nodes:
             # VALIDATION 1
             if feature in clustered_features:
-                raise ValueError(f"Feature `{feature}` is already present in some other cluster. Clusters shall not be overlapping")
+                raise ValueError(
+                    f"Feature `{feature}` is already present in some other cluster. Clusters shall not be overlapping"
+                )
             # VALIDATION 2
             if feature not in self.data.columns:
                 raise ValueError(f"Feature `{feature}` is not present in the data.")

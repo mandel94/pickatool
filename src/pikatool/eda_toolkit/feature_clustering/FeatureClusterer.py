@@ -25,7 +25,7 @@ GetClusterMethods = {
 }
 
 
-class FeatureClusterer():
+class FeatureClusterer:
     """"""
 
     def __init__(self, data: pd.DataFrame) -> None:
@@ -89,7 +89,6 @@ class FeatureClusterer():
             )
 
         return self.clusters
-    
 
     def print_clusters(self):
         """

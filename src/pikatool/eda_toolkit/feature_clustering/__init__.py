@@ -1,4 +1,4 @@
-from .FeatureClusterer import CollinearityHandler
+from .FeatureClusterer import FeatureClusterer
 from .mcaFC import mcaFC
 from ._types import FCluster as Cluster
 

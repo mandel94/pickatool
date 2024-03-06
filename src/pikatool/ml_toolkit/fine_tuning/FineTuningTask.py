@@ -93,7 +93,8 @@ class FineTuningTask:
         search_obj = FineTuningTask.SEARCH_OBJECTS[strategy_name]
         if refit_strategy and refit_strategy in RefitStrategy.__dict__["__args__"]:
             refit_fun = FineTuningTask.CUSTOM_REFITS[refit_strategy]
-            return search_obj(model, refit=refit_fun, **kwargs)
+            self.search_strategy = search_obj(model, refit=refit_fun, **kwargs)
+            return self
         self.search_strategy = search_obj(model, **kwargs)
         return self
 
