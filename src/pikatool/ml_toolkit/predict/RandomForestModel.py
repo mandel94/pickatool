@@ -36,7 +36,7 @@ RandomForestModelDict = {
 }
 
 
-class RandomForestModelTask:
+class RandomForestTask:
 
     def __init__(self, model_type: RandomForestModelTypes = "classifier"):
         self.model_class = RandomForestModelDict[model_type]

@@ -29,26 +29,19 @@ def compute_distances(
 class DataHandler:
 
     def __init__(
-        self,
-        /,
-        path: Optional[str] = None,
-        data: Optional[pd.DataFrame] = None,
-        **pandasKwargs,
+        self, /, path: Optional[str] = None, data: Optional[pd.DataFrame] = None
     ):
         """Initialize the DataHandler class."""
         if path:
             if not _path_exists(path):
                 raise FileNotFoundError(f"File not found: {path}")
+            self.path = path
         elif data is not None:
-            self.data = pd.pd.DataFrame(data, **pandasKwargs)
+            self.data = data
         else:
             raise ValueError(
                 "No data provided. Please provide a path or a pd.DataFrame."
             )
-        # Path or data should not be provided at the same time
-        if path and data:
-            raise ValueError("Both path and data cannot be provided at the same time.")
-        self.path = path
 
     def __getitem__(self, key: str) -> Any:
         return self.data[key]
@@ -206,6 +199,24 @@ class DataHandler:
     def rename_column(self, old_name: str, new_name: str, inplace: bool = True):
         return self.data.rename(columns={old_name: new_name}, inplace=inplace)
 
+    def reindex_column(self, column: str, new_index: int):
+        """Reindex a column in the dataframe.
+        It pops the column and reinserts it at the new index. It keeps the
+        original column name. The dataframe is updated inplace.
+        """
+        col = self.data.pop(column)
+        self.data.insert(new_index, col.name, col)  # Update the dataframe inplace
+        return self
+
+    def column_apply(
+        self, column: str, function: Callable, inplace=True
+    ) -> pd.DataFrame:
+        """Apply a function to a column of the dataframe."""
+        new_col = self.data[column].apply(function)
+        if inplace:
+            self.data[column] = new_col
+        return new_col
+
     def column_names_apply(self, function: Callable) -> Any:
         """Apply a function to the column names of the dataframe."""
         return self.data.rename(columns=function, inplace=True)
@@ -335,14 +346,15 @@ class DataHandler:
             self.data = new_data
         return self.data
 
-    def load(self, **kwargs) -> pd.DataFrame:
+    def load(self, **loadKw) -> pd.DataFrame:
+        """Load data using path provided in the constructor."""
         if not self.path:
             raise ValueError(
                 "No path provided. You should provide a path before loading data."
             )
-        data_loader = PandasDataLoader(self.path, **kwargs)
-        self.data = data_loader.load_data(**kwargs)
-        return self
+        data_loader = PandasDataLoader(self.path)
+        self.data = data_loader.load_data(**loadKw)
+        return self.data
 
     def save(self, path: str, **kwargs) -> None:
         data_loader = PandasDataLoader(path)

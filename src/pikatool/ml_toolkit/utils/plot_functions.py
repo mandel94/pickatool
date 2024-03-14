@@ -24,7 +24,7 @@ def plot_silhouette(
     # The 1st subplot is the silhouette plot
     # The silhouette coefficient can range from -1, 1 but in this example all
     # lie within [-0.1, 1]
-  
+
     # # The (n_clusters+1)*10 is for inserting blank space between silhouette
     # # plots of individual clusters, to demarcate them clearly.
     # ax1.set_ylim([0, len(data) + (n_clusters + 1) * 10])
@@ -50,7 +50,7 @@ def plot_silhouette(
     for i in range(n_clusters):
         # Aggregate the silhouette scores for samples belonging to
         # cluster i, and sort them
-        is_in_cluster = [l==i for l in labels]
+        is_in_cluster = [l == i for l in labels]
         ith_cluster_silhouette_values = sample_silhouette_values[is_in_cluster]
 
         ith_cluster_silhouette_values.sort()
@@ -133,9 +133,9 @@ def plot_dendrogram(
     plt.show()
 
 
-
-def plot_scores_grid(k_grid: Iterable[float|int], 
-                     scoring_metric: Iterable[float|int]): 
+def plot_scores_grid(
+    k_grid: Iterable[float | int], scoring_metric: Iterable[float | int]
+):
     """Plot the scores of a clustering model against a grid of clusters' number.
 
     Args:
@@ -143,24 +143,28 @@ def plot_scores_grid(k_grid: Iterable[float|int],
         scoring_metric (Iterable[float|int]): the scores of the clustering model.
     """
 
-    fig, ax = plt.subplots()    
+    fig, ax = plt.subplots()
     # Plot a line. The x-axis is the number of clusters, the y-axis is the score.
     # Use a good looking theme, add labels and title. Add a void red circle in correspondence of the best score,
     # and a smaller cross for all other points.
     # Add an annotation to the best score point, with the annotation "Best score".
 
-    ax.plot(k_grid, scoring_metric, marker='_', color='c')
-    ax.set_xlabel('Number of clusters')
-    ax.set_ylabel('Score')
-    ax.set_title('Clustering score against number of clusters')
+    ax.plot(k_grid, scoring_metric, marker="_", color="c")
+    ax.set_xlabel("Number of clusters")
+    ax.set_ylabel("Score")
+    ax.set_title("Clustering score against number of clusters")
     best_score = max(scoring_metric)
     best_k = k_grid[scoring_metric.index(best_score)]
-    ax.plot(best_k, best_score, marker='o', color='r')
-    ax.annotate('Best score', (best_k, best_score), textcoords="offset points", 
-                xytext=(-20,10), 
-                arrowprops=dict(facecolor='black', arrowstyle='->'),
-                ha='center')
+    ax.plot(best_k, best_score, marker="o", color="r")
+    ax.annotate(
+        "Best score",
+        (best_k, best_score),
+        textcoords="offset points",
+        xytext=(-20, 10),
+        arrowprops=dict(facecolor="black", arrowstyle="->"),
+        ha="center",
+    )
     for k, score in zip(k_grid, scoring_metric):
         if k != best_k:
-            ax.plot(k, score, marker='x', color='b')
+            ax.plot(k, score, marker="x", color="b")
     plt.show()

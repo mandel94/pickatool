@@ -2,10 +2,10 @@ from .eda_toolkit.data_handler import DataHandler
 from .eda_toolkit.data_loader import DataLoader
 from .eda_toolkit.feature_clustering.FeatureClusterer import FeatureClusterer
 from .ml_toolkit.cluster.ClusteringTask import (
-    ClusteringTask, 
+    ClusteringTask,
     ClusteringScorer,
-    ClusteringModelParams
-)   
+    ClusteringModelParams,
+)
 
 
 __all__ = [
@@ -14,5 +14,5 @@ __all__ = [
     "ClusteringTask",
     "FeatureClusterer",
     "ClusteringScorer",
-    "ClusteringModelParams"
+    "ClusteringModelParams",
 ]

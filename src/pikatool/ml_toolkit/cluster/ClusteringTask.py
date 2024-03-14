@@ -91,7 +91,7 @@ class ClusteringResult:
     def __call__(self) -> pd.DataFrame:
         self.data["k"] = [c.cluster_tag for c in self.clusters]
         return self.data
-    
+
     @property
     def cluster_tags(self) -> list[float | int]:
         "Returns labels of the clusters."
@@ -121,11 +121,11 @@ class ClusteringResult:
             )
         metric_func = ClusteringEvaluationMetrics[metric_]
         # Only keep variables that are not present in the metric function signature
-        kwargs = {k: v for k, v in kwargs.items() if k in metric_func.__code__.co_varnames}
+        kwargs = {
+            k: v for k, v in kwargs.items() if k in metric_func.__code__.co_varnames
+        }
         metric_value = ClusteringEvaluationMetrics[metric_](
-            X=self.data,
-            labels=self.cluster_tags, 
-            **kwargs
+            X=self.data, labels=self.cluster_tags, **kwargs
         )
         return metric_value
 
@@ -139,9 +139,11 @@ class ClusteringModelParams:
 
 class ClusteringTask:
 
-    def __init__(self, data: Optional[pd.DataFrame] = None, model_type: str ="agglomerative"):
+    def __init__(
+        self, data: Optional[pd.DataFrame] = None, model_type: str = "agglomerative"
+    ):
         self.model_class = ClusteringModelImpl.get(model_type)
-        self.data = data  
+        self.data = data
         self.has_model = False
         self.is_fitted = False
         self.data = None
@@ -149,7 +151,9 @@ class ClusteringTask:
 
     def create_model(self, model_params: ClusteringModelParams = None):
         self.model_params = model_params
-        self.model = self.model_class(**self.model_params.__dict__, compute_distances=True)
+        self.model = self.model_class(
+            **self.model_params.__dict__, compute_distances=True
+        )
         return self
 
     def fit_attach(self, data) -> Self:
@@ -208,18 +212,18 @@ class ClusteringTask:
         )
 
 
-
-class ClusteringScorer: 
+class ClusteringScorer:
     """"""
-    
+
     def __init__(self, task: ClusteringTask):
         self.task = task
 
     def _check_has_results_to_plot(self):
         if not self.task.is_fitted:
-            raise ValueError("The task has no fitted model. You must have some" 
-                             "clustered data to plot.")
-
+            raise ValueError(
+                "The task has no fitted model. You must have some"
+                "clustered data to plot."
+            )
 
     def plot_silhouette(self, metric: Optional[str] = "euclidean"):
         """Plot silhouette plot for the clustering result.
@@ -243,8 +247,7 @@ class ClusteringScorer:
             ),
             metric=metric,
         )
-    
-   
+
     def plot_dendrogram(
         self,
         figure_parameters: dict = {},
@@ -254,7 +257,7 @@ class ClusteringScorer:
         **kwargs,
     ):
         self._check_has_results_to_plot()
-        
+
         if display_entities:
             entities = self.task.cluster_tags.clustered_entities
         else:
@@ -266,16 +269,19 @@ class ClusteringScorer:
             axes_parameters,
             truncating_line,
             **kwargs,
-        )     
+        )
 
-
-    def plot_scores_grid(self, scoring_metric: str = "silhouette_score",
-                         range_: Sequence[Tuple[int, int]] = [3, 12], **kwargs) -> None:
+    def plot_scores_grid(
+        self,
+        scoring_metric: str = "silhouette_score",
+        range_: Sequence[Tuple[int, int]] = [3, 12],
+        **kwargs,
+    ) -> None:
         """Plot results of clustering against a predefined grid of parameters.
-        
+
         This method works by using task to fit different models with different number of clusters.
         All other clustering parameters are kept as they are in the task.
-        For each model, the scoring metric is calculated, and the list of 
+        For each model, the scoring metric is calculated, and the list of
         (number of clusters, scoring metric value) is used to create the plot.
 
         Args:
@@ -290,12 +296,12 @@ class ClusteringScorer:
             self.task.create_model(ClusteringModelParams(n_clusters=k))
             self.task.fit_attach(self.task.data)
             import warnings
+
             with warnings.catch_warnings(action="ignore"):
-                score = self.task.clustering_result.clustering_score(scoring_metric, **kwargs)
+                score = self.task.clustering_result.clustering_score(
+                    scoring_metric, **kwargs
+                )
             results.append((k, score))
         k_grid = [r[0] for r in results]
         scores = [r[1] for r in results]
         _plot_scores_grid(k_grid, scores)
-
-
-
