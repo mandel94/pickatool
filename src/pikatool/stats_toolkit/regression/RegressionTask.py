@@ -4,7 +4,7 @@ import statsmodels.api as sm
 from formulaic import Formula # https://pypi.org/project/formulaic/
 import pandas as pd
 import numpy as np
-from pikatool.types import Model, RegressionModelParams, RegressionModel, RegressionModelResult
+from pikatool.types import Model, RegressionModelParams, RegressionModel, RegressionResult
 
 
 
