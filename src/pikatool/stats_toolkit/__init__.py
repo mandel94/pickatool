@@ -7,6 +7,8 @@ from .compute_correlation import (
 
 from .dimensionality_reduction.mca import MCA_v0, MCA_v1, MCA_v2
 
+from .regression.RegressionTask import RegressionTask, RegressionModelParams
+
 
 _all_ = [
     "compute_correlation",
@@ -15,4 +17,6 @@ _all_ = [
     "MCA_v0",
     "MCA_v1",
     "MCA_v2",
+    "RegressionTask",
+    "RegressionModelParams"
 ]
