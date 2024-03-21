@@ -19,8 +19,9 @@ def _get_model(type) -> Any:
     """
     if type == "ols":
         return sm.OLS
-    elif type == "glm":
-        return sm.GLM
+    elif type == "logit":
+        # TODO - Add support for logistic regression
+        return sm.Logit
     else:
         raise ValueError("Invalid model type")
 
@@ -57,6 +58,7 @@ class RegressionTask():
             target=y,
             features=X,
             model_name = params.model_name if hasattr(params, "model_name") else None,
+            model_type=params.model_type,
             model_object=_get_model(params.model_type)(y, X)
         )
         return self.models[_id]

@@ -2,6 +2,11 @@ import pandas as pd
 from typing import Any
 from dataclasses import dataclass
 from formulaic import Formula
+from typing import Literal, TypeAlias, Self
+import numpy as np
+from abc import abstractmethod
+
+
 
 class Model:
     def __init__(self, target: pd.DataFrame, features: pd.DataFrame, model_name: str, model_object: Any) -> None:
@@ -30,12 +35,19 @@ class Model:
         res = self.model_object.fit(**kwargs)
         self.fitted = True
         self.model_result = res
+
+    @abstractmethod
+    def get_coeffs_for_interpretation(self, family: Literal["regression"]) -> Self:
+        """Transforms the coefficients of the model into a more interpretable form.
+        """
+        pass
     
     def summary(self) -> None:
         """Prints the summary of the model.
         """
         print(self.model_result.summary())
 
+ModelTypes: TypeAlias = Literal["ols", "logit"]
     
 @dataclass
 class RegressionModelParams:
@@ -46,8 +58,41 @@ class RegressionModelParams:
 
 
 class RegressionModel(Model):
-    def __init__(self, target: pd.DataFrame, features: pd.DataFrame, model_name: str, model_object: Any) -> None:
-        super().__init__(target, features, model_name, model_object)
+    def __init__(self, target: pd.DataFrame, features: pd.DataFrame, model_name: str, model_type: str, model_object: Any) -> None:
+        super().__init__(target, features, model_name, model_type, model_object)
+
+    def get_coeffs_for_interpretation(self) -> Any:
+
+        """Transforms the coefficients of the model into a more interpretable form.s
+        
+        Returns the transformed coefficients. This is useful when I need to 
+        transform the coefficients for the sake of interpretation. For example,
+        logit models have coefficients that are in log-odds: In that case it 
+        would be more useful to turn them into odd-ratios. 
+
+
+        Here is a list of the transformations that can be applied, for each model type:
+        - ols: No transformation is needed
+        - logit: The coefficients are transformed into increments in odds ratios
+            log(p/(1-p)) = b0 + b1*x1 + b2*x2 + ... + bn*xn
+            p/(1-p) = exp(b0 + b1*x1 + b2*x2 + ... + bn*xn)
+            --> The coefficient can be interpreted as:
+            ** numerical features: If you increase the feature by 1, the odds will increase by a factor of exp(coef)
+            ** binary/categorical features: ... by a factor of exp(coef) compared to the reference category (0)
+            ** intercept: When all features are 0, the odds will be exp(coef)
+            https://christophm.github.io/interpretable-ml-book/logistic.html 
+        Example:
+        ```python
+        model.interpret_as("odds")
+        ```        
+        """
+        if not self.fitted:
+            raise ValueError("Model has not been fitted yet. Please run the fit method first.")
+        if self.model_type == "logit":
+            # return transformed coefficients
+            return np.exp(self.model_result.params)
+        else:
+            raise ValueError("Model type not supported for better interpretation")
 
 class RegressionResult:
     """"""
