@@ -47,6 +47,9 @@ def get_similarity_function(distance) -> Callable:
     """
     Get the similarity function based on the distance.
 
+    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.DistanceMetric.html
+    for a list of available distance metrics.
+
     Args:
         distance (str): The distance metric.
 
@@ -61,6 +64,25 @@ def get_similarity_function(distance) -> Callable:
         return 1 - dist.pairwise(array1.T, array2.T)[0][0]
 
     return compute_similarity
+
+def get_distance_function(distance) -> Callable:
+    """
+    Get the distance function based on the distance.
+    
+    Args:
+        distance (str): The distance metric.
+        
+    Returns:
+        Callable: The distance function.
+    """
+    dist = DistanceMetric.get_metric(distance)
+
+    def compute_distance(array1, array2):
+        array1 = pd.DataFrame(array1)
+        array2 = pd.DataFrame(array2)
+        return dist.pairwise(array1.T, array2.T)[0][0]
+    
+    return compute_distance
 
 
 def get_correlation_function(method="pearson") -> Callable:
@@ -95,12 +117,36 @@ def compute_correlation_matrix(data: pd.DataFrame, method="pearson") -> pd.DataF
         pd.DataFrame: The correlation matrix of the features in the data.
     """
     # Initialize distance matrix
-    distance_matrix = np.zeros((len(data.columns), len(data.columns)))
+    similarity_matrix = np.zeros((len(data.columns), len(data.columns)))
     # for each row, for each column, compute the correlation
     for i, col1 in enumerate(data.columns):
         for j, col2 in enumerate(data.columns):
-            distance_matrix[i, j] = compute_correlation(
+            similarity_matrix[i, j] = compute_correlation(
                 data[col1], data[col2], method=method
+            )
+    similarity_matrix = pd.DataFrame(
+        similarity_matrix, index=data.columns, columns=data.columns
+    )
+    return similarity_matrix
+
+def compute_distance_matrix(data: pd.DataFrame, method="euclidean") -> pd.DataFrame:
+    """
+    Compute the distance matrix of the features in the data.
+
+    Args:
+        data (pd.DataFrame): The data.
+        method (str, optional): The method for computing the distance. Defaults to "euclidean".
+
+    Returns:
+        pd.DataFrame: The distance matrix of the features in the data.
+    """
+    # Initialize distance matrix
+    distance_matrix = np.zeros((len(data.columns), len(data.columns)))
+    # for each row, for each column, compute the distance
+    for i, col1 in enumerate(data.columns):
+        for j, col2 in enumerate(data.columns):
+            distance_matrix[i, j] = get_distance_function(method)(
+                data[col1], data[col2]
             )
     distance_matrix = pd.DataFrame(
         distance_matrix, index=data.columns, columns=data.columns

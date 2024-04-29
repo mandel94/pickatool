@@ -18,5 +18,5 @@ _all_ = [
     "MCA_v1",
     "MCA_v2",
     "RegressionTask",
-    "RegressionModelParams"
+    "RegressionModelParams",
 ]

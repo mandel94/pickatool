@@ -2,20 +2,18 @@ from typing import Any, TypeAlias, TypeVar, Union, Iterable, Optional
 from pikatool.types import Model
 
 
-
-        
-
-
 def _best_subset_selection(model: Model):
-    """Best subset selection for linear regression.
-    """
+    """Best subset selection for linear regression."""
     target = model.target
     features = model.features
     n = len(features)
     # List of all possible models
     models = []
     best_models = Model(
-        target=target, features=None, model_name="Null Model", model_object=model.model_object
+        target=target,
+        features=None,
+        model_name="Null Model",
+        model_object=model.model_object,
     )
     for i in range(1, n + 1):
         models.append(_get_best_k_subset(i, features, target))
@@ -42,8 +40,3 @@ class ModelSelectionTask:
 
         """
         return _best_subset_selection(self.model)
-
-
-
-
-    

@@ -1,19 +1,23 @@
 from dataclasses import dataclass
 from typing import Union, Iterable, Any, TypeAlias, Optional, Self
 import statsmodels.api as sm
-from formulaic import Formula # https://pypi.org/project/formulaic/
+from formulaic import Formula  # https://pypi.org/project/formulaic/
 import pandas as pd
 import numpy as np
-from pikatool.types import Model, RegressionModelParams, RegressionModel, RegressionResult
-
+from pikatool.types import (
+    Model,
+    RegressionModelParams,
+    RegressionModel,
+    RegressionResult,
+)
 
 
 def _get_model(type) -> Any:
     """Returns the model based on the type given.
-    
+
     Args:
         type (str): The type of model to be created
-    
+
     Returns:
         Any: The model object to be used for the regression model
     """
@@ -26,15 +30,15 @@ def _get_model(type) -> Any:
         raise ValueError("Invalid model type")
 
 
-class RegressionTask():
+class RegressionTask:
     """"""
 
-    def __init__(self, data: pd.DataFrame, task_name: Optional[str]="") -> None:
+    def __init__(self, data: pd.DataFrame, task_name: Optional[str] = "") -> None:
         """Initializes the class with the data.
 
         It gets data, and uses across all models that'll be created using this
-        task instance. 
-        
+        task instance.
+
         Args:
             data (pd.DataFrame): The data to be used for the regression task
         """
@@ -42,8 +46,6 @@ class RegressionTask():
         self.models: dict[str, RegressionModel] = {}
         self.task_name = task_name
 
-
-        
     def create_model(self, params: RegressionModelParams) -> RegressionModel:
         """Take data, and creates a regression model following parameters.
 
@@ -53,39 +55,43 @@ class RegressionTask():
         It returns the model created, and also stores it in the class instance
         """
         _id = params.model_name
-        y, X = Formula(params.formula).get_model_matrix(self.data)
+        if params.formula:
+            # If there is a formula, use it to get the target and features, add intercepts etc...
+            y, X = Formula(params.formula).get_model_matrix(self.data)
+        else:
+            y, X = (self.data[params.target], self.data[params.predictors])
+            if params.add_intercept:
+                X = sm.add_constant(X)
+
         self.models[_id] = RegressionModel(
+            model_name=params.model_name,
             target=y,
             features=X,
-            model_name = params.model_name if hasattr(params, "model_name") else None,
-            model_type=params.model_type,
-            model_object=_get_model(params.model_type)(y, X)
+            model_object=_get_model(params.model_type)(
+                endog=y.astype(float), exog=X.astype(float)
+            )
         )
         return self.models[_id]
-    
+
     def run(self, model_id: Optional[Union[Iterable[int], int]] = None) -> Self:
-        """Runs the model with the given id. 
+        """Runs the model with the given id.
         If no id is given, it runs all models added to the task.
 
         It returns the result of the model run.
         """
         if model_id is None:
-            [self.models[id].fit() for id in self.models.keys()] # Run all models
+            [self.models[id].fit() for id in self.models.keys()]  # Run all models
         elif isinstance(model_id, int):
             model_id = [model_id]
         else:
             [self.models[id].fit() for id in model_id]
         return self
-    
 
     def summary(self, model_id: int) -> None:
-        """Prints the summary of the model with the given id.
-        """
+        """Prints the summary of the model with the given id."""
         return self.models[model_id].summary()
-    
 
     def test_for_linearity(self, method: str = "rainbow") -> None:
-        """Tests for linearity using the given method.
-        """
+        """Tests for linearity using the given method."""
         # https://www.statsmodels.org/stable/gettingstarted.html
         pass

@@ -6,6 +6,7 @@ from .ml_toolkit.cluster.ClusteringTask import (
     ClusteringScorer,
     ClusteringModelParams,
 )
+from .types import RegressionModelParams
 
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     "FeatureClusterer",
     "ClusteringScorer",
     "ClusteringModelParams",
+    "RegressionModelParams",
 ]
